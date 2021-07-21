@@ -269,7 +269,7 @@ class MQTTService : NSObject, MQTTSessionDelegate {
             // Add datapoints to mapper session.
             mapperSession?.addDataPoints(datapoints)
         } catch {
-            NSLog("MQTTService.Error: Cannor parse JSON")
+            NSLog("MQTTService.Error: Cannot parse JSON")
         }
     }
     
