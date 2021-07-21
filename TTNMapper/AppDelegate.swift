@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UIApplication.shared.isIdleTimerDisabled = true
         
         // Crash reporting stuff
-        Fabric.with([Crashlytics.self])
+//        Fabric.with([Crashlytics.self])
         
         // Get handlers from the TTN discovery service.
         TTNDiscoveryService.sharedInstance.queryHandlers()
