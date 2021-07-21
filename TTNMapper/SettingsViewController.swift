@@ -597,7 +597,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, MQTTService
             appEUITextView.layer.masksToBounds = true
             isValid = false
         }
-        if accessKeyTextView.text == "" || accessKeyTextView.text?.count != 58 {
+        if accessKeyTextView.text == "" {
             accessKeyTextViewBorderRed = createRedBorderLayer(accessKeyTextView)
             accessKeyTextView.layer.addSublayer(accessKeyTextViewBorderRed)
             accessKeyTextView.layer.masksToBounds = true
