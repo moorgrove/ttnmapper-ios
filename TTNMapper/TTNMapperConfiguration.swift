@@ -29,7 +29,7 @@ class TTNMapperConfiguration {
     var topic: String {
         get {
             if !deviceEUI.isEmpty && !appEUI.isEmpty {
-                return appEUI + "/devices/" + deviceEUI + "/up"
+                return "v3/" + appEUI + "@ttn/devices/" + deviceEUI + "/up"
             }
             return ""
         }
