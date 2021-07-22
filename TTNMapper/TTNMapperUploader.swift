@@ -78,33 +78,58 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
         }
         
         let data: NSMutableDictionary = NSMutableDictionary()
-        data.setValue(ttnmapperPacket.appEUI, forKey: "appeui")
-        data.setValue(ttnmapperPacket.nodeAddr, forKey: "nodeaddr")
-        data.setValue(ttnmapperPacket.gateway!.gatewayId, forKey: "gwaddr")
-        data.setValue(instanceID, forKey: "iid")
+        data.setValue("NS_TTS_V3", forKey: "network_type")
+        data.setValue(networkAddress, forKey: "network_address")
+        data.setValue("NS_TTS_V3" + "://" + networkAddress, forKey: "network_id")
+        
+        data.setValue(ttnmapperPacket.appEUI, forKey: "app_id")
+        data.setValue(ttnmapperPacket.nodeAddr, forKey: "dev_id")
+        data.setValue(ttnmapperPacket.devEUI, forKey: "dev_eui")
         
         data.setValue(ttnmapperPacket.time, forKey: "time")
+        
+        data.setValue(ttnmapperPacket.fPort, forKey: "port")
+        data.setValue(ttnmapperPacket.fCount, forKey: "counter")
+        
+        data.setValue(ttnmapperPacket.frequency, forKey: "frequency")
+        // ADD modulation
+        data.setValue(ttnmapperPacket.bandwidth, forKey: "bandwidth")
+        data.setValue(ttnmapperPacket.spreadingFactor, forKey: "spreading_factor")
+        data.setValue(ttnmapperPacket.codingRate, forKey: "bit_rate")
         data.setValue(ttnmapperPacket.dataRate, forKey: "datarate")
-        data.setValue(ttnmapperPacket.snr, forKey: "snr")
-        data.setValue(ttnmapperPacket.rssi, forKey: "rssi")
-        data.setValue(ttnmapperPacket.frequency, forKey: "freq")
-        data.setValue(ttnmapperPacket.location!.coordinate.latitude ,forKey: "lat")
-        data.setValue(ttnmapperPacket.location!.coordinate.longitude, forKey: "lon")
+        
+        data.setValue(ttnmapperPacket.gateway!.gatewayId, forKey: "gateways")
+        
+        data.setValue(ttnmapperPacket.location!.coordinate.latitude ,forKey: "latitude")
+        data.setValue(ttnmapperPacket.location!.coordinate.longitude, forKey: "longitude")
         if ttnmapperPacket.location!.altitude != 0 {
-            data.setValue(ttnmapperPacket.location!.altitude, forKey: "alt")
+            data.setValue(ttnmapperPacket.location!.altitude, forKey: "altitude")
         }
         if ttnmapperPacket.location!.horizontalAccuracy != 0 {
-            data.setValue(ttnmapperPacket.location!.horizontalAccuracy ,forKey: "accuracy")
+            data.setValue(ttnmapperPacket.location!.horizontalAccuracy ,forKey: "accuracy_meters")
         }
-        data.setValue("ios", forKey: "provider")
-        data.setValue(self.topic, forKey: "mqtt_topic")
-        data.setValue(self.userAgent, forKey: "user_agent")
+        // ADD? satellites
+        // ADD? hdop
+        data.setValue("gps", forKey: "location_source")
         
         let experimentName = self.experimentName
         if self.isExperimental {
             data.setValue(experimentName, forKey: "experiment")
         }
+        // Add userid
+        data.setValue(self.userAgent, forKey: "useragent")
         
+        
+        
+        // Extra
+        data.setValue(instanceID, forKey: "iid")
+        data.setValue(ttnmapperPacket.snr, forKey: "snr")
+        data.setValue(ttnmapperPacket.rssi, forKey: "rssi")
+        data.setValue("ios", forKey: "provider")
+        data.setValue(self.topic, forKey: "mqtt_topic")
+        
+        
+
         // JSONify data.
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: data, options: JSONSerialization.WritingOptions())
@@ -123,14 +148,14 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
                 // This is how the mapper learns about new gateways.
                 let dataGateway: NSMutableDictionary = NSMutableDictionary()
                 dataGateway.setValue(ttnmapperPacket.time, forKey: "time")
-                dataGateway.setValue(ttnmapperPacket.gateway!.gatewayId, forKey: "gwaddr")
-                dataGateway.setValue(ttnmapperPacket.gateway!.coordinate.latitude, forKey: "lat")
-                dataGateway.setValue(ttnmapperPacket.gateway!.coordinate.longitude, forKey: "lon")
+                dataGateway.setValue(ttnmapperPacket.gateway!.gatewayId, forKey: "gateways")
+                dataGateway.setValue(ttnmapperPacket.gateway!.coordinate.latitude, forKey: "latitude")
+                dataGateway.setValue(ttnmapperPacket.gateway!.coordinate.longitude, forKey: "longitude")
                 var altitude = 0.0
                 if ttnmapperPacket.gateway!.location != nil {
                     altitude = ttnmapperPacket.gateway!.location!.altitude
                 }
-                dataGateway.setValue(altitude, forKey: "alt")
+                dataGateway.setValue(altitude, forKey: "altitude")
                 dataGateway.setValue(instanceID, forKey: "iid")
                 
                 // JSONify data
