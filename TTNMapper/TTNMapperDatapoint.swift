@@ -13,9 +13,15 @@ class TTNMapperDatapoint: NSObject, MKAnnotation {
     
     var nodeAddr : String?
     var appEUI : String?
+    var devEUI: String?
     var time : String?
+    var fPort : Int?
+    var fCount : Int?
     var frequency : Double?
+    var bandwidth : Int?
+    var spreadingFactor : Int?
     var dataRate : String?
+    var codingRate : String?
     var rssi : Double?
     var snr : Double?
     var location : CLLocation?
