@@ -80,7 +80,7 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
         let data: NSMutableDictionary = NSMutableDictionary()
         data.setValue("NS_TTS_V3", forKey: "network_type")
         data.setValue(networkAddress, forKey: "network_address")
-        data.setValue("NS_TTS_V3" + "://" + networkAddress, forKey: "network_id")
+        data.setValue("NS_TTS_V3://ttn@000013", forKey: "network_id")
         
         data.setValue(ttnmapperPacket.appEUI, forKey: "app_id")
         data.setValue(ttnmapperPacket.nodeAddr, forKey: "dev_id")
@@ -108,21 +108,18 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
         if ttnmapperPacket.location!.horizontalAccuracy != 0 {
             data.setValue(ttnmapperPacket.location!.horizontalAccuracy ,forKey: "accuracy_meters")
         }
-        // ADD? satellites
-        // ADD? hdop
         data.setValue("gps", forKey: "location_source")
         
         let experimentName = self.experimentName
         if self.isExperimental {
             data.setValue(experimentName, forKey: "experiment")
         }
-        // Add userid
+        data.setValue(instanceID, forKey: "userid")
         data.setValue(self.userAgent, forKey: "useragent")
         
         
         
         // Extra
-        data.setValue(instanceID, forKey: "iid")
         data.setValue(ttnmapperPacket.snr, forKey: "snr")
         data.setValue(ttnmapperPacket.rssi, forKey: "rssi")
         data.setValue("ios", forKey: "provider")
@@ -156,7 +153,7 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
                     altitude = ttnmapperPacket.gateway!.location!.altitude
                 }
                 dataGateway.setValue(altitude, forKey: "altitude")
-                dataGateway.setValue(instanceID, forKey: "iid")
+                dataGateway.setValue(instanceID, forKey: "userid")
                 
                 // JSONify data
                 let jsonDataGateway = try! JSONSerialization.data(withJSONObject: data, options: JSONSerialization.WritingOptions())
