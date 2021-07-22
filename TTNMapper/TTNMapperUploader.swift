@@ -21,6 +21,7 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
     // Properties that are read from configuration.
     fileprivate(set) var topic : String
     fileprivate(set) var ttnbroker : String
+    fileprivate(set) var networkAddress: String
     fileprivate(set) var isExperimental : Bool
     fileprivate(set) var experimentName : String
     // Initialize instanceID with some default UUID
@@ -30,6 +31,7 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
         // Initialize some fields from the configuration.
         self.topic = configuration.topic
         self.ttnbroker = configuration.ttnbroker
+        self.networkAddress = configuration.ttnbrokerurl
         self.experimentName = configuration.experimentName
         self.isExperimental = configuration.isExperimental
         
