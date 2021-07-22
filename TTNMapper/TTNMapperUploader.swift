@@ -117,15 +117,6 @@ class TTNMapperUploader: TTNMapperSessionDelegate {
         data.setValue(instanceID, forKey: "userid")
         data.setValue(self.userAgent, forKey: "useragent")
         
-        
-        
-        // Extra
-        data.setValue(ttnmapperPacket.snr, forKey: "snr")
-        data.setValue(ttnmapperPacket.rssi, forKey: "rssi")
-        data.setValue("ios", forKey: "provider")
-        data.setValue(self.topic, forKey: "mqtt_topic")
-        
-        
 
         // JSONify data.
         do {
