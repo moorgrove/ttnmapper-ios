@@ -40,8 +40,6 @@ class MQTTDataParser {
     fileprivate func parseProductionJsonPacket(_ packet: [String : AnyObject]) -> [TTNMapperDatapoint] {
         var ttnmapperPackets = [TTNMapperDatapoint]()
         
-        
-            
         let uplink_message = packet["uplink_message"] as? [String: AnyObject]
         if let uplink_message = uplink_message {
             let rx_metadata = uplink_message["rx_metadata"] as? [[String: AnyObject]]
@@ -54,6 +52,9 @@ class MQTTDataParser {
                     var gatewayTime = rx_metadataItem["time"] as? String
                     ttnmapperPacket.rssi = rx_metadataItem["rssi"] as? Double
                     ttnmapperPacket.snr = rx_metadataItem["snr"] as? Double
+                    
+                    ttnmapperPacket.fPort = uplink_message["f_port"] as? Int
+                    ttnmapperPacket.fCount = uplink_message["f_cnt"] as? Int
                     
                     var gatewayId: String? = nil
                     let gateway_ids = rx_metadataItem["gateway_ids"] as? [String: AnyObject]
@@ -73,10 +74,8 @@ class MQTTDataParser {
                     
                     let end_device_ids = packet["end_device_ids"] as? [String: AnyObject]
                     if let end_device_ids = end_device_ids {
-                        let devId = end_device_ids["device_id"] as? String
-                        if let devId = devId {
-                            ttnmapperPacket.nodeAddr = devId
-                        }
+                        ttnmapperPacket.nodeAddr = end_device_ids["device_id"] as? String
+                        ttnmapperPacket.devEUI = end_device_ids["dev_eui"] as? String
                     }
                     
                     let settings = uplink_message["settings"] as? [String: AnyObject]
@@ -85,12 +84,16 @@ class MQTTDataParser {
                         
                         let tempFrequencyString = settings["frequency"] as? String ?? ""
                         let tempFrequencyInt = Int(tempFrequencyString)
-                        ttnmapperPacket.frequency = Double(round(1000 * Double(tempFrequencyInt ?? 0) / 1000000)/1000)                        
+                        ttnmapperPacket.frequency = Double(round(1000 * Double(tempFrequencyInt ?? 0) / 1000000)/1000)
+                        
+                        ttnmapperPacket.codingRate = settings["coding_rate"] as? String ?? ""
                         
                         let data_rate = settings["data_rate"] as? [String: AnyObject]
                         if let data_rate = data_rate {
                             let lora = data_rate["lora"] as? [String: AnyObject]
                             if let lora = lora {
+                                ttnmapperPacket.bandwidth = lora["bandwidth"] as? Int
+                                ttnmapperPacket.spreadingFactor = lora["spreading_factor"] as? Int
                                 let tempBandwidthInt = lora["bandwidth"] as? Int
                                 let tempSpreadingFactorInt = lora["spreading_factor"] as? Int
                                 let tempBandwidthString = tempBandwidthInt.map(String.init) ?? ""
