@@ -502,7 +502,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, MQTTService
                 conf!.ttnbrokerRegion == handlerRegionTextView.text! &&
                 conf!.deviceEUI == devEUITextView.text! &&
                 conf!.appEUI == appEUITextView.text! &&
-                conf!.username == appEUITextView.text! &&
+                conf!.username == appEUITextView.text! + "@ttn" &&
                 conf!.password == accessKeyTextView.text!
             
             // Only check experiment names if the configuration is experimental.
@@ -539,7 +539,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, MQTTService
         conf!.ttnbrokerRegion = handlerRegionTextView.text!
         conf!.deviceEUI = devEUITextView.text!
         conf!.appEUI = appEUITextView.text!
-        conf!.username = appEUITextView.text!
+        conf!.username = appEUITextView.text! + "@ttn"
         conf!.password = accessKeyTextView.text!
         
         // Persist changes
