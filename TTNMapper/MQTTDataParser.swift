@@ -39,7 +39,7 @@ class MQTTDataParser {
 
     fileprivate func parseProductionJsonPacket(_ packet: [String : AnyObject]) -> [TTNMapperDatapoint] {
     
-        /* New format: 
+        /* NewOld format:
         {
             "port":1,
             "counter":1,
@@ -66,38 +66,138 @@ class MQTTDataParser {
             }
         }
         */
+        
+        /* NewNew Format
+         {
+             "end_device_ids": {
+                 "device_id": "moorgrove-lopy",
+                 "application_ids": {
+                     "application_id": "test-moorgrove"
+                 },
+                 "dev_eui": "70B3D54994FE123E",
+                 "join_eui": "0000000000000000",
+                 "dev_addr": "260B95BA"
+             },
+             "correlation_ids": ["as:up:01FB57Y509HMDCA8MA758N89S1", "gs:conn:01FB4BGDT5QMAQER07BA70WA2Y", "gs:up:host:01FB4BGDTMNBHFA1F5ZT80PDB9", "gs:uplink:01FB57Y4STVM9FBFRN76514JV8", "ns:uplink:01FB57Y4SW8960B7QSZYYMTEAS", "rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01FB57Y4SW45JE7V0VVZ7139Z4", "rpc:/ttn.lorawan.v3.NsAs/HandleUplink:01FB57Y509TDZKQCGCHCZMESDM"],
+             "received_at": "2021-07-21T19:16:03.722952860Z",
+             "uplink_message": {
+                 "session_key_id": "AXrJc58f0kUPWcffjqq09A==",
+                 "f_port": 2,
+                 "f_cnt": 9,
+                 "frm_payload": "ABZfGxs=",
+                 "decoded_payload": {
+                     "air1": 27,
+                     "air2": 27,
+                     "floculation": 0,
+                     "humidity": 95,
+                     "temperature": 22
+                 },
+                 "rx_metadata": [{
+                     "gateway_ids": {
+                         "gateway_id": "lahalla-ttig",
+                         "eui": "58A0CBFFFE801FCC"
+                     },
+                     "time": "2021-07-21T19:16:03.427562952Z",
+                     "timestamp": 4038607188,
+                     "rssi": -45,
+                     "channel_rssi": -45,
+                     "snr": 8.25,
+                     "location": {
+                         "latitude": 58.358109,
+                         "longitude": 11.45707,
+                         "altitude": 35,
+                         "source": "SOURCE_REGISTRY"
+                     },
+                     "uplink_token": "ChoKGAoMbGFoYWxsYS10dGlnEghYoMv//oAfzBDUguGFDxoMCPPk4YcGENrOsPUBIKDg/P3E4wY="
+                 }],
+                 "settings": {
+                     "data_rate": {
+                         "lora": {
+                             "bandwidth": 125000,
+                             "spreading_factor": 7
+                         }
+                     },
+                     "data_rate_index": 5,
+                     "coding_rate": "4/5",
+                     "frequency": "867500000",
+                     "timestamp": 4038607188,
+                     "time": "2021-07-21T19:16:03.427562952Z"
+                 },
+                 "received_at": "2021-07-21T19:16:03.516720196Z",
+                 "consumed_airtime": "0.051456s"
+             }
+         }
+         */
         var ttnmapperPackets = [TTNMapperDatapoint]()
         
-        let metadata = packet["metadata"] as? [String: AnyObject]
-        if let metadata = metadata {
-            let gatewayData = metadata["gateways"] as? [[String: AnyObject]]
-            if let gatewayData = gatewayData {
-                for gatewayItem in gatewayData {
+        
+            
+        let uplink_message = packet["uplink_message"] as? [String: AnyObject]
+        if let uplink_message = uplink_message {
+            let rx_metadata = uplink_message["rx_metadata"] as? [[String: AnyObject]]
+            if let rx_metadata = rx_metadata {
+                for rx_metadataItem in rx_metadata {
                     let ttnmapperPacket = TTNMapperDatapoint()
                     ttnmapperPacket.nodeAddr = self.deviceId
-                    //TODO Check with JP if the dev_id needs to be parsed in case of a wildcard.
-                    let devId = packet["dev_id"] as? String
-                    if let devId = devId {
-                        ttnmapperPacket.nodeAddr = devId
-                    }
                     ttnmapperPacket.appEUI = self.appEUI
-                    ttnmapperPacket.time = metadata["time"] as? String
-                    ttnmapperPacket.frequency = metadata["frequency"] as? Double
-                    ttnmapperPacket.dataRate = metadata["data_rate"] as? String
-                    ttnmapperPacket.rssi = gatewayItem["rssi"] as? Double
-                    ttnmapperPacket.snr = gatewayItem["snr"] as? Double
                     
-                    let gatewayId = gatewayItem["gtw_id"] as? String
-                    let gatewayLatitude = gatewayItem["latitude"] as? Double
-                    let gatewayLongitude = gatewayItem["longitude"] as? Double
-                    var gatewayAltitude = gatewayItem["altitude"] as? Double
-                    if gatewayAltitude == nil {
-                        gatewayAltitude = 0.0
+                    var gatewayTime = rx_metadataItem["time"] as? String
+                    ttnmapperPacket.rssi = rx_metadataItem["rssi"] as? Double
+                    ttnmapperPacket.snr = rx_metadataItem["snr"] as? Double
+                    
+                    var gatewayId: String? = nil
+                    let gateway_ids = rx_metadataItem["gateway_ids"] as? [String: AnyObject]
+                    if let gateway_ids = gateway_ids {
+                        gatewayId = gateway_ids["gateway_id"] as? String
                     }
-                    var gatewayTime = gatewayItem["time"] as? String
+                    
+                    var gatewayAltitude: Double? = nil
+                    var gatewayLongitude: Double? = nil
+                    var gatewayLatitude: Double? = nil
+                    let location = rx_metadataItem["location"] as? [String: AnyObject]
+                    if let location = location {
+                        gatewayLatitude = location["latitude"] as? Double
+                        gatewayLongitude = location["longitude"] as? Double
+                        gatewayAltitude = location["altitude"] as? Double
+                    }
+                    
+                    let end_device_ids = packet["end_device_ids"] as? [String: AnyObject]
+                    if let end_device_ids = end_device_ids {
+                        let devId = end_device_ids["device_id"] as? String
+                        if let devId = devId {
+                            ttnmapperPacket.nodeAddr = devId
+                        }
+                    }
+                    
+                    let settings = uplink_message["settings"] as? [String: AnyObject]
+                    if let settings = settings {
+                        ttnmapperPacket.time = settings["time"] as? String
+                        
+                        let tempFrequencyString = settings["frequency"] as? String ?? ""
+                        let tempFrequencyInt = Int(tempFrequencyString)
+                        ttnmapperPacket.frequency = Double(round(1000 * Double(tempFrequencyInt ?? 0) / 1000000)/1000)                        
+                        
+                        let data_rate = settings["data_rate"] as? [String: AnyObject]
+                        if let data_rate = data_rate {
+                            let lora = data_rate["lora"] as? [String: AnyObject]
+                            if let lora = lora {
+                                let tempBandwidthInt = lora["bandwidth"] as? Int
+                                let tempSpreadingFactorInt = lora["spreading_factor"] as? Int
+                                let tempBandwidthString = tempBandwidthInt.map(String.init) ?? ""
+                                let temptempSpreadingFactorString = tempSpreadingFactorInt.map(String.init) ?? ""
+                                ttnmapperPacket.dataRate = "SF" + temptempSpreadingFactorString + "BW" + tempBandwidthString.prefix(3) as String
+                            }
+                        }
+                    }
+
                     if gatewayTime == nil {
                         gatewayTime = ""
                     }
+
+                    if gatewayAltitude == nil {
+                        gatewayAltitude = 0.0
+                    }
+
                     // Use current local time if no timestamp has been provided by the gateway.
                     if gatewayTime == "" {
                         gatewayTime = Date().iso8601
